@@ -14,6 +14,15 @@ PRONOUNS = [
     ("son", "daughter", "child"),
     ("brother", "sister", "sibling"),
     ("brothers", "sisters", "siblings"),
+    ("male", "female", "person"),
+    ("males", "females", "people"),
+    ("father", "mother", "parent"),
+    ("fathers", "mothers", "parents"),
+    ("uncle", "aunt", "relative"),
+    ("uncles", "aunts", "relatives"),
+    ("husband", "wife", "spouse"),
+    ("husbands", "wives", "spouses")
+
 ]
 MALE = 0
 FEMALE = 1
