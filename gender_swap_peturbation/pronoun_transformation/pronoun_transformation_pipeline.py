@@ -1,6 +1,7 @@
 import os
 import pandas as pd
 from sys import argv
+import subprocess
 from .get_engine import engine_from_config
 from .swap_gender_pronouns import remap_df, remap_df_swap, gender_name_to_id
 
@@ -197,14 +198,15 @@ def calculate_transformed_scores(transformed_df: pd.DataFrame,
     store_table(transformed_df, table_name, db)
 
     # Use dlatk to create lex table
-    # TODO: Call dlatk from python?
+    print("Calculating updating scores...")
     dlatk_command = "~/dlatkInterface.py -d {db} -t {basetable_name} -c sid --add_lex_table -l {lexicon_table_name} --weighted_lexicon".format(
         db = db, basetable_name = basetable_name, lexicon_table_name = lexicon_table_name)
-    # os.system(dlatk_command)
-    print(dlatk_command)
+    print("Running: ", dlatk_command)
+    output = subprocess.call(dlatk_command, shell=True)
+    print("dlatk command returned ", output)
 
 
-def compare_transform_effect(old_score_table : str, new_score_table : str, message_table : str, csv_name : str, db : str = 'politeness'):
+def compare_transform_effect(old_score_table : str, new_score_table : str, message_table : str, db : str = 'politeness'):
     """
     Select the message id, the lexicon-predicted scores of the original message,
     and the lexicon-predicted scores of the transformed message. Compute the
@@ -218,9 +220,7 @@ def compare_transform_effect(old_score_table : str, new_score_table : str, messa
     new_score_table
         The name of the basetable containing ids of messages to be transformed
     message_table
-        The name of the gender whose pronouns will be replaced
-    csv_name
-        The name of the target gender for the replaced pronouns
+        The name of the original message table
     db
         The name of the db
 
@@ -245,9 +245,6 @@ def compare_transform_effect(old_score_table : str, new_score_table : str, messa
     with engine.connect() as conn:
         df = pd.read_sql(sql, conn)
         df["score_difference"] = df["original_score"] - df["transformed_score"]
-        df.to_csv(
-            "{csv_name}.csv".format(csv_name = csv_name), index=False
-        )
         return df
 
 def store_table(df : pd.DataFrame, table_name : str, db : str = 'politeness'):

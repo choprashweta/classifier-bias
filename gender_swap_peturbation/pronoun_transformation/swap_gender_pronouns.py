@@ -1,5 +1,29 @@
 import pandas as pd
 
+SWAP_DICTIONARY = {
+    'f2m': {
+        'gender_from_names': ['female'],
+        'gender_to_name': 'male',
+        'transformation_name': 'FEMALE to MALE'
+    },
+    'f2n': {
+        'gender_from_names': ['female'],
+        'gender_to_name': 'neutral',
+        'transformation_name': 'FEMALE to NEUTRAL'
+    },
+    'm2f': {
+        'gender_from_names': ['male'],
+        'gender_to_name': 'female',
+        'transformation_name': 'MALE to FEMALE'
+    },
+    'm2n': {
+        'gender_from_names': ['male'],
+        'gender_to_name': 'neutral',
+        'transformation_name': 'MALE to NEUTRAL'
+    },
+}
+
+
 PRONOUNS = [
     ("himself", "herself", "themselves"),
     ("him", "her", "them"),
