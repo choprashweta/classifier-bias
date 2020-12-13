@@ -95,15 +95,15 @@ def gender_id_to_name(id: int) -> str:
         return 'neutral'
 
 
-def replace_pronouns(token: str, from_genders: list, to_gender: int) -> str:
+def replace_pronouns(ngram: str, from_genders: list, to_gender: int) -> str:
     """
     Check the given token against each row of the look up table, and transform
     it if it matches any row.
 
     Parameters
     ----------
-    token
-        The string to be transformed
+    ngram
+        The ngram to be transformed
     from_gender
         The indices in the lookup table to check the token against
     to_gender
@@ -112,29 +112,41 @@ def replace_pronouns(token: str, from_genders: list, to_gender: int) -> str:
 
     Returns
     -------
-    The token, transformed if it matched any row in the lookup table, unchanged
+    The ngram, transformed if it contains a token that matched any row in the lookup table, unchanged
     otherwise.
     """
+
     for from_gender in from_genders:
         for pronoun_group in PRONOUNS:
-            if pronoun_group[from_gender] == token:
-                return pronoun_group[to_gender], "{} to {}".format(gender_id_to_name(from_gender), gender_id_to_name(to_gender))
-    return token, "null"
+            if pronoun_group[from_gender] in ngram:
+                updated_ngram = [pronoun_group[to_gender] if pronoun_group[from_gender] == token else token for token in list(ngram.split(" "))]
+                updated_ngram = " ".join(updated_ngram)
+                return updated_ngram, "{} to {}".format(gender_id_to_name(from_gender), gender_id_to_name(to_gender))
+    return ngram, "null"
 
 
-def swap_pronouns(token: str, a_gender: int, b_gender: int) -> str:
+def swap_pronouns(ngram: str, a_gender: int, b_gender: int) -> str:
     """
     The same as `replace_pronouns`, except instead of transforming from
     `from_gender` to `to_gender`, this function swaps any pronoun between
     `a_gender` and `b_gender`. See `replace_pronouns` for more details.
     """
     for pronoun_group in PRONOUNS:
-        if pronoun_group[a_gender] == token:
-            return pronoun_group[b_gender], "{} to {}".format(gender_id_to_name(a_gender), gender_id_to_name(b_gender))
-        elif pronoun_group[b_gender] == token:
-            return pronoun_group[a_gender], "{} to {}".format(gender_id_to_name(b_gender), gender_id_to_name(a_gender))
+        if pronoun_group[a_gender] in ngram:
+            updated_ngram = [pronoun_group[b_gender] if pronoun_group[a_gender] == token else token for token in list(ngram.split(" "))]
+            updated_ngram = " ".join(updated_ngram)
 
-    return token, "null"
+            if updated_ngram != ngram:
+                return updated_ngram, "{} to {}".format(gender_id_to_name(a_gender), gender_id_to_name(b_gender))
+
+        if pronoun_group[b_gender] in ngram:
+            updated_ngram = [pronoun_group[a_gender] if pronoun_group[b_gender] == token else token for token in list(ngram.split(" "))]
+            updated_ngram = " ".join(updated_ngram)
+
+            if updated_ngram != ngram:
+                return updated_ngram, "{} to {}".format(gender_id_to_name(b_gender), gender_id_to_name(a_gender))
+
+    return ngram, "null"
 
 
 def remap_df(df: pd.DataFrame, from_genders: list, to_gender: int) -> pd.DataFrame:
