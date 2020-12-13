@@ -43,17 +43,17 @@ def create_base_table(basetable_name : str, category_table : str, category_col :
             )
 
 
-def transform_1grams(onegram_table_name : str, basetable_name : str, 
+def transform_ngrams(onegram_table_name : str, basetable_name : str, 
                         gender_from_names: list, gender_to_name: str,
                         db : str = 'politeness') -> pd.DataFrame:
     """
-    Collect all of the 1-grams from the messages to be analyzed, and perform the
+    Collect all of the n-grams from the messages to be analyzed, and perform the
     specified gender swaps.
 
     Parameters
     ----------
     onegram_table_name
-        The name of the onegram table to be used to perform gender swaps
+        The name of the ngram table to be used to perform gender swaps
     basetable_name
         The name of the basetable containing ids of messages to be transformed
     gender_from_name
@@ -65,7 +65,7 @@ def transform_1grams(onegram_table_name : str, basetable_name : str,
 
     Returns
     -------
-    A pandas DataFrame which contains the 1-gram table with the `feat` column
+    A pandas DataFrame which contains the n-gram table with the `feat` column
     containing the transformed pronouns.
     """
     engine = engine_from_config(database = db)
@@ -85,11 +85,11 @@ def transform_1grams(onegram_table_name : str, basetable_name : str,
     return df
 
 
-def transform_1grams_swap(onegram_table_name : str, basetable_name : str, 
+def transform_ngrams_swap(onegram_table_name : str, basetable_name : str, 
                         a_gender: str, b_gender: str,
                         db : str = 'politeness') -> pd.DataFrame:
     """
-    Collect all of the 1-grams from the messages to be analyzed, and perform the
+    Collect all of the n-grams from the messages to be analyzed, and perform the
     specified gender swaps.
 
     Parameters
@@ -105,7 +105,7 @@ def transform_1grams_swap(onegram_table_name : str, basetable_name : str,
 
     Returns
     -------
-    A pandas DataFrame which contains the 1-gram table with the `feat` column
+    A pandas DataFrame which contains the n-gram table with the `feat` column
     containing the transformed pronouns.
     """
     engine = engine_from_config(database = db)
@@ -124,9 +124,9 @@ def transform_1grams_swap(onegram_table_name : str, basetable_name : str,
     return df
 
 
-def create_transformed_1gram_table(transformed_df: pd.DataFrame) -> pd.DataFrame:
+def create_transformed_ngram_table(transformed_df: pd.DataFrame) -> pd.DataFrame:
     """
-    Generate an uploadable 1gram table with transformed gender tokens
+    Generate an uploadable ngram table with transformed gender tokens
 
     Parameters
     ----------
@@ -135,7 +135,7 @@ def create_transformed_1gram_table(transformed_df: pd.DataFrame) -> pd.DataFrame
 
     Returns
     -------
-    A pandas DataFrame which contains the 1-gram table with the `feat` column
+    A pandas DataFrame which contains the n-gram table with the `feat` column
     containing the transformed pronouns.
 
     """
@@ -170,21 +170,22 @@ def create_tranformation_metadata_table(transformed_df: pd.DataFrame) -> pd.Data
     
 
 def calculate_transformed_scores(transformed_df: pd.DataFrame, 
-    transformed_1gram_table_name : str, 
+    transformed_ngram_table_name : str, 
     basetable_name : str,
     lexicon_table_name : str,
+    weighted_lexicon_flag: bool,
     db : str = 'politeness'):
     """
-    Create a 1-gram table from the `transformed_df`, and runs dlatk to compute
+    Create a n-gram table from the `transformed_df`, and runs dlatk to compute
     lexicon scores on the transformed messages.
 
     Parameters
     ----------
     transformed_df
-        A DataFrame which contains the 1-grams to be analyzed with the lexicon.
+        A DataFrame which contains the n-grams to be analyzed with the lexicon.
         This should be the output of `transform_1grams`.
-    transformed_1gram_table_name
-        The name for the gender swapped 1gram table to be uploaded to sql
+    transformed_ngram_table_name
+        The name for the gender swapped ngram table to be uploaded to sql
     basetable_name
         The name of the basetable created for this task
     lexicon_table_name
@@ -193,14 +194,17 @@ def calculate_transformed_scores(transformed_df: pd.DataFrame,
         The name of the db
     """
 
-    table_name = "{transformed_1gram_table_name}".format(transformed_1gram_table_name = transformed_1gram_table_name)
-    #upload 1grams to table
+    table_name = "{transformed_ngram_table_name}".format(transformed_ngram_table_name = transformed_ngram_table_name)
+    #upload ngrams to table
     store_table(transformed_df, table_name, db)
 
+    weighted_lexicon_condition = '--weighted_lexicon' if weighted_lexicon_flag else ''
     # Use dlatk to create lex table
     print("Calculating updating scores...")
-    dlatk_command = "~/dlatkInterface.py -d {db} -t {basetable_name} -c sid --add_lex_table -l {lexicon_table_name} --weighted_lexicon".format(
-        db = db, basetable_name = basetable_name, lexicon_table_name = lexicon_table_name)
+    dlatk_command = "~/dlatkInterface.py -d {db} -t {basetable_name} -c sid --add_lex_table -l {lexicon_table_name} {weighted_lexicon_condition} --word_table '{transformed_ngram_table_name}'".format(
+        db = db, basetable_name = basetable_name, lexicon_table_name = lexicon_table_name, 
+        weighted_lexicon_condition = weighted_lexicon_condition,
+        transformed_ngram_table_name = transformed_ngram_table_name)
     print("Running: ", dlatk_command)
     output = subprocess.call(dlatk_command, shell=True)
     print("dlatk command returned ", output)
