@@ -43,7 +43,7 @@ def create_base_table(basetable_name : str, category_table : str, category_col :
             )
 
 
-def transform_ngrams(onegram_table_name : str, basetable_name : str, 
+def transform_ngrams(ngram_table_name : str, basetable_name : str, 
                         gender_from_names: list, gender_to_name: str,
                         db : str = 'politeness') -> pd.DataFrame:
     """
@@ -52,7 +52,7 @@ def transform_ngrams(onegram_table_name : str, basetable_name : str,
 
     Parameters
     ----------
-    onegram_table_name
+    ngram_table_name
         The name of the ngram table to be used to perform gender swaps
     basetable_name
         The name of the basetable containing ids of messages to be transformed
@@ -71,9 +71,9 @@ def transform_ngrams(onegram_table_name : str, basetable_name : str,
     engine = engine_from_config(database = db)
     with engine.connect() as conn:
         df = pd.read_sql(
-            """SELECT {onegram_table_name}.*
-            FROM {onegram_table_name} INNER JOIN {basetable_name}
-            ON {onegram_table_name}.group_id={basetable_name}.sid;""".format(onegram_table_name = onegram_table_name, 
+            """SELECT {ngram_table_name}.*
+            FROM {ngram_table_name} INNER JOIN {basetable_name}
+            ON {ngram_table_name}.group_id={basetable_name}.sid;""".format(ngram_table_name = ngram_table_name, 
                 basetable_name = basetable_name),
             conn,
         )
@@ -85,7 +85,7 @@ def transform_ngrams(onegram_table_name : str, basetable_name : str,
     return df
 
 
-def transform_ngrams_swap(onegram_table_name : str, basetable_name : str, 
+def transform_ngrams_swap(ngram_table_name : str, basetable_name : str, 
                         a_gender: str, b_gender: str,
                         db : str = 'politeness') -> pd.DataFrame:
     """
@@ -94,8 +94,8 @@ def transform_ngrams_swap(onegram_table_name : str, basetable_name : str,
 
     Parameters
     ----------
-    onegram_table_name
-        The name of the onegram table to be used to perform gender swaps
+    ngram_table_name
+        The name of the ngram table to be used to perform gender swaps
     basetable_name
         The name of the basetable containing ids of messages to be transformed
     a_gender, b_gender
@@ -111,9 +111,9 @@ def transform_ngrams_swap(onegram_table_name : str, basetable_name : str,
     engine = engine_from_config(database = db)
     with engine.connect() as conn:
         df = pd.read_sql(
-            """SELECT {onegram_table_name}.*
-            FROM {onegram_table_name} INNER JOIN {basetable_name}
-            ON {onegram_table_name}.group_id={basetable_name}.sid;""".format(onegram_table_name = onegram_table_name, 
+            """SELECT {ngram_table_name}.*
+            FROM {ngram_table_name} INNER JOIN {basetable_name}
+            ON {ngram_table_name}.group_id={basetable_name}.sid;""".format(ngram_table_name = ngram_table_name, 
                 basetable_name = basetable_name),
             conn,
         )
@@ -183,7 +183,7 @@ def calculate_transformed_scores(transformed_df: pd.DataFrame,
     ----------
     transformed_df
         A DataFrame which contains the n-grams to be analyzed with the lexicon.
-        This should be the output of `transform_1grams`.
+        This should be the output of `transform_ngrams`.
     transformed_ngram_table_name
         The name for the gender swapped ngram table to be uploaded to sql
     basetable_name
@@ -220,7 +220,7 @@ def compare_transform_effect(old_score_table : str, new_score_table : str, messa
     Parameters
     ----------
     old_score_table
-        The name of the onegram table to be used to perform gender swaps
+        The name of the ngram table to be used to perform gender swaps
     new_score_table
         The name of the basetable containing ids of messages to be transformed
     message_table
@@ -267,7 +267,7 @@ def store_table(df : pd.DataFrame, table_name : str, db : str = 'politeness'):
     """
 
     engine = engine_from_config(database = db)
-    # Upload 1grams to table
+    # Upload ngrams to table
     with engine.connect() as conn:
         df.to_sql(table_name, conn, index=False, if_exists="replace")
 
