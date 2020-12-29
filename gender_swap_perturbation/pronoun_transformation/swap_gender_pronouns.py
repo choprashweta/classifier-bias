@@ -45,7 +45,10 @@ PRONOUNS = [
     ("uncle", "aunt", "relative"),
     ("uncles", "aunts", "relatives"),
     ("husband", "wife", "spouse"),
-    ("husbands", "wives", "spouses")
+    ("husbands", "wives", "spouses"),
+    ("mr.", "ms.", "mx."),
+    ("boyfriend", "girlfriend", "friend"),
+    ("boyfriends", "girlfriends", "friends")
 
 ]
 MALE = 0
@@ -116,12 +119,18 @@ def replace_pronouns(ngram: str, from_genders: list, to_gender: int) -> str:
     otherwise.
     """
 
+    updated_ngram = ngram
     for from_gender in from_genders:
         for pronoun_group in PRONOUNS:
-            if pronoun_group[from_gender] in ngram:
-                updated_ngram = [pronoun_group[to_gender] if pronoun_group[from_gender] == token else token for token in list(ngram.split(" "))]
-                updated_ngram = " ".join(updated_ngram)
-                return updated_ngram, "{} to {}".format(gender_id_to_name(from_gender), gender_id_to_name(to_gender))
+            if pronoun_group[from_gender] in updated_ngram:
+                if pronoun_group[from_gender] == updated_ngram:
+                    updated_ngram = pronoun_group[to_gender]
+                else:
+                    updated_ngram = [pronoun_group[to_gender] if pronoun_group[from_gender] == token.strip() else token for token in list(updated_ngram.split(" "))]
+                    updated_ngram = " ".join(updated_ngram)
+        if updated_ngram != ngram:
+            print("original ngram: ", ngram, ", updated ngram: ", updated_ngram)
+            return updated_ngram, "{} to {}".format(gender_id_to_name(from_gender), gender_id_to_name(to_gender))
     return ngram, "null"
 
 
@@ -131,20 +140,26 @@ def swap_pronouns(ngram: str, a_gender: int, b_gender: int) -> str:
     `from_gender` to `to_gender`, this function swaps any pronoun between
     `a_gender` and `b_gender`. See `replace_pronouns` for more details.
     """
+    updated_ngram = ngram
     for pronoun_group in PRONOUNS:
-        if pronoun_group[a_gender] in ngram:
-            updated_ngram = [pronoun_group[b_gender] if pronoun_group[a_gender] == token else token for token in list(ngram.split(" "))]
-            updated_ngram = " ".join(updated_ngram)
+        if pronoun_group[a_gender] in updated_ngram:
+            if pronoun_group[a_gender] == updated_ngram:
+                updated_ngram = pronoun_group[b_gender]
+            else:
+                updated_ngram = [pronoun_group[b_gender] if pronoun_group[a_gender] == token.strip() else token for token in list(updated_ngram.split(" "))]
+                updated_ngram = " ".join(updated_ngram)
+    
+    for pronoun_group in PRONOUNS:
+        if pronoun_group[b_gender] in updated_ngram:
+            if pronoun_group[b_gender] == updated_ngram:
+                updated_ngram = pronoun_group[a_gender]
+            else:
+                updated_ngram = [pronoun_group[a_gender] if pronoun_group[b_gender] == token.strip() else token for token in list(updated_ngram.split(" "))]
+                updated_ngram = " ".join(updated_ngram)
 
-            if updated_ngram != ngram:
-                return updated_ngram, "{} to {}".format(gender_id_to_name(a_gender), gender_id_to_name(b_gender))
-
-        if pronoun_group[b_gender] in ngram:
-            updated_ngram = [pronoun_group[a_gender] if pronoun_group[b_gender] == token else token for token in list(ngram.split(" "))]
-            updated_ngram = " ".join(updated_ngram)
-
-            if updated_ngram != ngram:
-                return updated_ngram, "{} to {}".format(gender_id_to_name(b_gender), gender_id_to_name(a_gender))
+    if updated_ngram != ngram:
+        print("original ngram: ", ngram, ", updated ngram: ", updated_ngram)
+        return updated_ngram, "{} and {} swap".format(gender_id_to_name(b_gender), gender_id_to_name(a_gender))
 
     return ngram, "null"
 
