@@ -17,17 +17,17 @@ pd.set_option("display.max_rows", 500)
 db = 'politeness' #database name
 message_table = 'twitter' #original message table
 user_initials = 'sc' #initials of user running the pipeline
-features_used = 'LIWC' #Only used for naming the final table, eg. if using LIWC plus politelex use liwc_politelex
+features_used = 'ngr_liwc_plex' #Only used for naming the final table, eg. if using LIWC plus politelex use liwc_politelex
 
-lexicon_table_name = 'dd_twitter_politeness'
+lexicon_table_name = 'dd_twitter_politeness_npl'
 weighted_lexicon_flag = True
 
 category_table = 'feat$cat_LIWC2015$twitter$sid$1gra' #table from which to subset categories for transformation
 category_col = 'feat' #category column
 category_name = 'PRONOUN' #name of the category of messages for which to perform transformation
 
-ngram_table_name = 'feat$1gram$twitter$sid$16to16'
-old_score_table = 'feat$cat_dd_twitter_politeness_w$twitter$sid$1gra'
+ngram_table_name = 'feat$1to3gram$twitter$sid$16to16'
+old_score_table = 'feat$cat_dd_twitter_politeness_npl_w$twitter$sid$1to3'
 
 
 if __name__ == '__main__':
@@ -81,11 +81,15 @@ if __name__ == '__main__':
 		score_column_name = swap_type + "_score"
 		swap_final_df.columns = ['id', 'message', 'original_score', score_column_name]
 
+		print(swap_final_df.head(10))
+
 		final_tables.append(swap_final_df)
 
 	print("\nCompiling results from all gender transformations...\n")
 
 	final_df = reduce(lambda left, right: pd.merge(left, right, on = ['id', 'message', 'original_score'], how = 'outer'), final_tables)
+
+	print(final_df.head(10))
 
 	final_table_name = message_table + "_" + user_initials + "_" + features_used + "_" +  "gender_swap"
 
