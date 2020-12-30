@@ -142,20 +142,14 @@ def swap_pronouns(ngram: str, a_gender: int, b_gender: int) -> str:
     """
     updated_ngram = ngram
     for pronoun_group in PRONOUNS:
-        if pronoun_group[a_gender] in updated_ngram:
-            if pronoun_group[a_gender] == updated_ngram:
-                updated_ngram = pronoun_group[b_gender]
-            else:
-                updated_ngram = [pronoun_group[b_gender] if pronoun_group[a_gender] == token.strip() else token for token in list(updated_ngram.split(" "))]
-                updated_ngram = " ".join(updated_ngram)
-    
-    for pronoun_group in PRONOUNS:
-        if pronoun_group[b_gender] in updated_ngram:
-            if pronoun_group[b_gender] == updated_ngram:
-                updated_ngram = pronoun_group[a_gender]
-            else:
-                updated_ngram = [pronoun_group[a_gender] if pronoun_group[b_gender] == token.strip() else token for token in list(updated_ngram.split(" "))]
-                updated_ngram = " ".join(updated_ngram)
+        if pronoun_group[a_gender] == updated_ngram:
+            updated_ngram = pronoun_group[b_gender]
+        elif pronoun_group[b_gender] in updated_ngram:
+            updated_ngram = pronoun_group[a_gender]
+        elif pronoun_group[a_gender] in updated_ngram or pronoun_group[b_gender] in updated_ngram:
+            updated_ngram = [pronoun_group[b_gender] if pronoun_group[a_gender] == token.strip() \
+            else pronoun_group[a_gender] if pronoun_group[b_gender] == token.strip() else token for token in list(updated_ngram.split(" "))]
+            updated_ngram = " ".join(updated_ngram)
 
     if updated_ngram != ngram:
         print("original ngram: ", ngram, ", updated ngram: ", updated_ngram)
