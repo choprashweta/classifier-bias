@@ -144,7 +144,7 @@ def swap_pronouns(ngram: str, a_gender: int, b_gender: int) -> str:
     for pronoun_group in PRONOUNS:
         if pronoun_group[a_gender] == updated_ngram:
             updated_ngram = pronoun_group[b_gender]
-        elif pronoun_group[b_gender] in updated_ngram:
+        elif pronoun_group[b_gender] == updated_ngram:
             updated_ngram = pronoun_group[a_gender]
         elif pronoun_group[a_gender] in updated_ngram or pronoun_group[b_gender] in updated_ngram:
             updated_ngram = [pronoun_group[b_gender] if pronoun_group[a_gender] == token.strip() \
