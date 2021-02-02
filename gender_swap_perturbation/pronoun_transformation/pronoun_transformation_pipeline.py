@@ -4,6 +4,11 @@ from sys import argv
 import subprocess
 from .get_engine import engine_from_config
 from .swap_gender_pronouns import remap_df, remap_df_swap, gender_name_to_id
+# import matplotlib
+# matplotlib.use('agg')
+import matplotlib.pyplot as plt
+plt.switch_backend('agg')
+import seaborn as sns
 
 
 def create_base_table(basetable_name : str, category_table : str, category_col : str = 'feat', category_name : str = 'PRONOUN',
@@ -295,4 +300,22 @@ def read_table(table_name : str, db : str = 'politeness') -> pd.DataFrame:
         sql = "SELECT * FROM `{}`.`{}`".format(db, table_name)
         df = pd.read_sql(sql, conn)
     return df
+
+def generate_boxplot(result_df, save_path):
+
+    df = result_df.copy()
+    df['f2m_delta'] = df['f2m_score'] - df['original_score']
+    df['m2f_delta'] = df['m2f_score'] - df['original_score']
+    df['m2n_delta'] = df['m2n_score'] - df['original_score']
+    df['f2n_delta'] = df['f2n_score'] - df['original_score']
+
+    plot_df = df[['id', 'f2m_delta', 'f2n_delta', 'm2n_delta', 'm2f_delta']]
+    plot_df = pd.melt(plot_df, id_vars = ['id'], value_vars = ['f2m_delta', 'f2n_delta', 'm2n_delta', 'm2f_delta'],
+        var_name = 'type', value_name = 'delta')
+    fig = sns.boxplot(x = 'type', y = 'delta', data = plot_df, hue = 'type').get_figure()
+    fig.savefig(save_path)
+    
+
+
+
 

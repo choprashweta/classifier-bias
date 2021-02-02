@@ -1,6 +1,5 @@
 import pandas as pd
 import numpy as np
-import matplotlib.pyplot as plt
 import seaborn as sns
 import os
 import scipy
@@ -9,6 +8,8 @@ import dlatk
 from functools import reduce
 import pronoun_transformation.pronoun_transformation_pipeline as pronoun_pp
 from pronoun_transformation.swap_gender_pronouns import SWAP_DICTIONARY
+import matplotlib
+matplotlib.use('agg')
 
 pd.set_option("display.max_rows", 500)
 
@@ -29,8 +30,12 @@ category_name = 'PRONOUN' #name of the category of messages for which to perform
 ngram_table_name = 'feat$1to3gram$twitter$sid$16to16'
 old_score_table = 'feat$cat_dd_twitter_politeness_npl_w$twitter$sid$1to3'
 
+plots_path = "gender_swap_plots"
 
 if __name__ == '__main__':
+
+	if not os.path.exists(plots_path):
+		os.mkdir(plots_path)
 
 	final_tables = []
 
@@ -95,7 +100,14 @@ if __name__ == '__main__':
 
 	pronoun_pp.store_table(final_df, final_table_name, db)
 
-	print("\nPipeline is complete! Your results can be found in the table {}.{}".format(db, final_table_name))
+	print("\nCreating boxplot from results...\n")
+
+	pronoun_pp.generate_boxplot(final_df, save_path = plots_path + "/" + final_table_name + ".png")
+
+
+	print("\nPipeline is complete!\n") 
+	print("Your results can be found in the table {}.{}".format(db, final_table_name))
+	print("Your boxplot can be found at {}/{}.png".format(plots_path, final_table_name))
 
 
 
