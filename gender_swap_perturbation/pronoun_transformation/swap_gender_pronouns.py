@@ -129,7 +129,7 @@ def replace_pronouns(ngram: str, from_genders: list, to_gender: int) -> str:
                     updated_ngram = [pronoun_group[to_gender] if pronoun_group[from_gender] == token.strip() else token for token in list(updated_ngram.split(" "))]
                     updated_ngram = " ".join(updated_ngram)
         if updated_ngram != ngram:
-            print("original ngram: ", ngram, ", updated ngram: ", updated_ngram)
+            # print("original ngram: ", ngram, ", updated ngram: ", updated_ngram)
             return updated_ngram, "{} to {}".format(gender_id_to_name(from_gender), gender_id_to_name(to_gender))
     return ngram, "null"
 
@@ -152,7 +152,7 @@ def swap_pronouns(ngram: str, a_gender: int, b_gender: int) -> str:
             updated_ngram = " ".join(updated_ngram)
 
     if updated_ngram != ngram:
-        print("original ngram: ", ngram, ", updated ngram: ", updated_ngram)
+        # print("original ngram: ", ngram, ", updated ngram: ", updated_ngram)
         return updated_ngram, "{} and {} swap".format(gender_id_to_name(b_gender), gender_id_to_name(a_gender))
 
     return ngram, "null"
