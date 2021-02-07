@@ -406,7 +406,7 @@ def run_pipeline(db,
 
     print(final_df.head(10))
 
-    final_table_name = message_table + "_" + user_initials + "_" + features_used + "_" +  "gender_swap"
+    final_table_name = message_table + "_" + user_initials + "_" + lexicon_table_name + "_" +  "gender_swap"
 
     store_table(final_df, final_table_name, db)
 
